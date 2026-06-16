@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Grille Observateur – Simulation EPP</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f0f4f8;color:#1a202c;font-size:15px;max-width:600px;margin:0 auto}
+.header{background:#1e3a5f;color:white;padding:18px 14px}
+.header h1{font-size:16px;font-weight:700;line-height:1.4}
+.header p{font-size:12px;opacity:.8;margin-top:4px}
+.tabs{display:flex;background:#fff;border-bottom:2px solid #e2e8f0}
+.tab{flex:1;padding:10px 4px;text-align:center;font-size:11px;font-weight:700;color:#718096;cursor:pointer;border-bottom:3px solid transparent}
+.tab.active{color:#1e3a5f;border-bottom-color:#1e3a5f;background:#f7faff}
+.section{display:none;padding:12px}
+.section.active{display:block}
+.card{background:#fff;border-radius:8px;padding:12px;margin-bottom:12px;border-left:4px solid #1e3a5f}
+.card h3{font-size:13px;font-weight:700;color:#1e3a5f;margin-bottom:6px}
+.card p,.card li{font-size:13px;color:#4a5568;line-height:1.5}
+.card li{margin-left:14px;margin-bottom:2px}
+.warn{border-left-color:#ed8936}
+.warn h3{color:#c05621}
+.tl{padding-left:24px;position:relative}
+.tl::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:#cbd5e0}
+.tl-item{position:relative;margin-bottom:14px;background:#fff;border-radius:8px;padding:10px 12px}
+.tl-dot{position:absolute;left:-20px;top:12px;width:12px;height:12px;border-radius:50%;border:2px solid #fff}
+.tl-phase{font-size:10px;font-weight:700;text-transform:uppercase;margin-bottom:2px}
+.tl-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.tl-dur{display:inline-block;background:#edf2f7;color:#4a5568;font-size:11px;padding:2px 7px;border-radius:8px;margin-bottom:6px}
+.tl-desc{font-size:12px;color:#4a5568;line-height:1.5}
+.tl-desc li{margin-left:12px;margin-bottom:2px}
+.p1 .tl-dot{background:#4299e1}.p1 .tl-phase{color:#2b6cb0}
+.p2 .tl-dot{background:#48bb78}.p2 .tl-phase{color:#276749}
+.p3 .tl-dot{background:#ed8936}.p3 .tl-phase{color:#c05621}
+.p4 .tl-dot{background:#9f7aea}.p4 .tl-phase{color:#6b46c1}
+.counter{background:#fff;border-radius:8px;padding:12px;margin-bottom:12px;display:flex;justify-content:space-around;text-align:center}
+.c-num{display:block;font-size:24px;font-weight:800}
+.c-lbl{display:block;font-size:11px;color:#718096}
+.c-oui .c-num{color:#48bb78}
+.c-non .c-num{color:#fc8181}
+.c-tot .c-num{color:#1e3a5f}
+.dim-title{font-size:13px;font-weight:700;padding:8px 12px;margin-bottom:0}
+.dim-blue{background:#ebf8ff;color:#2b6cb0;border-left:4px solid #4299e1;border-radius:8px 8px 0 0}
+.dim-orange{background:#fffaf0;color:#c05621;border-left:4px solid #ed8936;border-radius:8px 8px 0 0}
+.dim-green{background:#f0fff4;color:#276749;border-left:4px solid #48bb78;border-radius:8px 8px 0 0}
+.crit{background:#fff;border-bottom:1px solid #e2e8f0;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.crit:last-child{border-bottom:none;border-radius:0 0 8px 8px}
+.crit-txt{flex:1;font-size:13px;line-height:1.4;color:#2d3748}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;margin-bottom:3px}
+.t1{background:#ebf8ff;color:#2b6cb0}
+.t2{background:#e9f7ef;color:#276749}
+.t3{background:#fff5eb;color:#c05621}
+.t4{background:#f5f0ff;color:#6b46c1}
+.btns{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
+.bo,.bn{padding:5px 9px;border:none;border-radius:5px;font-size:12px;font-weight:700;cursor:pointer}
+.bo{background:#e9f7ef;color:#276749}
+.bn{background:#fff5f5;color:#c53030}
+.bo.sel{background:#48bb78;color:#fff}
+.bn.sel{background:#fc8181;color:#fff}
+.grp{margin-bottom:14px;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.reset{display:block;width:100%;padding:12px;background:#e2e8f0;color:#4a5568;font-size:13px;font-weight:700;border:none;border-radius:8px;cursor:pointer;margin-top:6px}
+.synth-card{background:#fff;border-radius:8px;padding:14px;margin-bottom:12px}
+.synth-card h3{font-size:14px;font-weight:700;color:#2d3748;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0}
+.s-dim{margin-bottom:12px}
+.s-lbl{font-size:12px;font-weight:700;margin-bottom:4px}
+.bar{height:10px;background:#e2e8f0;border-radius:5px;overflow:hidden;margin-bottom:2px}
+.bar-fill{height:100%;border-radius:5px;transition:width .3s}
+.s-txt{font-size:11px;color:#718096}
+.alert-box{background:#fffaf0;border-left:4px solid #ed8936;border-radius:8px;padding:10px 12px;margin-bottom:12px}
+.alert-box p{font-size:12px;color:#7b341e;line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Grille d'Observation – Formateur<br>Simulation EPP/DPC Optique</h1>
+  <p>Renouvellement d'ordonnance · Détection d'anomalie</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('contexte')">Contexte</div>
+  <div class="tab" onclick="showTab('timeline')">Timeline</div>
+  <div class="tab" onclick="showTab('grille')">Grille</div>
+  <div class="tab" onclick="showTab('synthese')">Synthese</div>
+</div>
+
+<!-- CONTEXTE -->
+<div id="tab-contexte" class="section active">
+  <div class="card">
+    <h3>Situation clinique</h3>
+    <p><strong>Patiente :</strong> Mme Claire BERNARD, 58 ans, enseignante</p>
+    <p style="margin-top:5px"><strong>Motif :</strong> Renouvellement de lunettes avant un voyage (dans 10 jours)</p>
+    <p style="margin-top:5px"><strong>Ordonnance :</strong> 2 ans et 8 mois — valide (moins de 3 ans pour plus de 42 ans)</p>
+  </div>
+  <div class="card">
+    <h3>Ce que l'opticien doit decouvrir</h3>
+    <ul>
+      <li>Acuite visuelle oeil droit : <strong>5/10 non ameliorable</strong></li>
+      <li>Scotome central OD (grille d'Amsler)</li>
+      <li>ATCD familiaux : <strong>mere atteinte de DMLA</strong></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Ce que l'opticien DOIT faire</h3>
+    <ul>
+      <li>Refuser le renouvellement</li>
+      <li>Orienter vers un ophtalmologiste</li>
+      <li>Rediger un compte-rendu professionnel</li>
+      <li><strong>Ne pas poser de diagnostic medical</strong></li>
+    </ul>
+  </div>
+  <div class="card warn">
+    <h3>Complexite du scenario</h3>
+    <p>La patiente est anxieuse, nie sa baisse de vision ("c'est la fatigue"), est sous pression temporelle et resiste a l'orientation. Elle tentera d'obtenir un diagnostic de l'opticien.</p>
+  </div>
+  <div class="card">
+    <h3>Votre role d'observateur</h3>
+    <ul>
+      <li>Restez <strong>silencieux</strong> pendant le scenario</li>
+      <li>Cochez vos observations dans l'onglet <strong>Grille</strong></li>
+      <li>Vos observations alimenteront le <strong>debriefing collectif</strong></li>
+    </ul>
+  </div>
+</div>
+
+<!-- TIMELINE -->
+<div id="tab-timeline" class="section">
+  <div class="alert-box"><p><strong>Duree totale : 15 minutes</strong> par opticien · 4 passages successifs</p></div>
+  <div class="tl">
+    <div class="tl-item p1">
+      <div class="tl-dot"></div>
+      <div class="tl-phase">Phase 1</div>
+      <div class="tl-title">Accueil et Anamnese</div>
+      <div class="tl-dur">4 min — des l'entree de la patiente</div>
+      <div class="tl-desc">
+        <ul>
+          <li>Accueille et recupere l'ordonnance</li>
+          <li>Questionne sur le confort visuel actuel</li>
+          <li>Recherche les ATCD familiaux oculaires</li>
+          <li>Propose un examen de vue</li>
+        </ul>
+        <p style="margin-top:6px;color:#c05621"><strong>Patiente :</strong> Minimise ses symptomes, evoque le voyage, souriante mais anxieuse</p>
+      </div>
+    </div>
+    <div class="tl-item p2">
+      <div class="tl-dot"></div>
+      <div class="tl-phase">Phase 2</div>
+      <div class="tl-title">Examens preliminaires</div>
+      <div class="tl-dur">5 min — en salle d'examen</div>
+      <div class="tl-desc">
+        <ul>
+          <li>Mesure acuite visuelle VL et VP (mono + bino)</li>
+          <li>Trou stenopei­que OD : AV non ameliorable</li>
+          <li>Grille d'Amsler OD : scotome central</li>
+        </ul>
+        <p style="margin-top:6px;color:#c05621"><strong>Patiente :</strong> Coopere. Confirme la tache centrale. "Alors, vous pouvez me faire de nouvelles lunettes ?"</p>
+      </div>
+    </div>
+    <div class="tl-item p3">
+      <div class="tl-dot"></div>
+      <div class="tl-phase">Phase 3</div>
+      <div class="tl-title">Identification et Annonce</div>
+      <div class="tl-dur">3 min — moment critique</div>
+      <div class="tl-desc">
+        <ul>
+          <li>Annonce l'impossibilite de renouveler</li>
+          <li>Explique la necessite d'un avis medical</li>
+          <li>Ne pose PAS de diagnostic (n'evoque pas la DMLA)</li>
+        </ul>
+        <p style="margin-top:6px;color:#c05621"><strong>Patiente :</strong> Resistance ("j'ai pas le temps !"), anxiete, cherche un diagnostic</p>
+      </div>
+    </div>
+    <div class="tl-item p4">
+      <div class="tl-dot"></div>
+      <div class="tl-phase">Phase 4</div>
+      <div class="tl-title">Orientation et Tracabilite</div>
+      <div class="tl-dur">3 min — cloture</div>
+      <div class="tl-desc">
+        <ul>
+          <li>Maintient fermement l'orientation ophtalmo</li>
+          <li>Redige le compte-rendu</li>
+          <li>Propose d'aider a prendre un RDV</li>
+          <li>Rassure sans minimiser ni alarmer</li>
+        </ul>
+        <p style="margin-top:6px;color:#c05621"><strong>Patiente :</strong> Accepte progressivement, remercie</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GRILLE -->
+<div id="tab-grille" class="section">
+  <div class="counter">
+    <div class="c-oui"><span class="c-num" id="cnt-oui">0</span><span class="c-lbl">Observes</span></div>
+    <div class="c-non"><span class="c-num" id="cnt-non">0</span><span class="c-lbl">Non obs.</span></div>
+    <div class="c-tot"><span class="c-num" id="cnt-tot">0</span><span class="c-lbl">/ 19</span></div>
+  </div>
+
+  <div class="grp">
+    <div class="dim-title dim-blue">Competences Techniques</div>
+    <div class="crit" data-dim="tech"><div class="crit-txt"><span class="tag t1">Phase 1</span><br>Verifie la validite de l'ordonnance (date + age)</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="tech"><div class="crit-txt"><span class="tag t1">Phase 1</span><br>Propose un examen de vue avant le renouvellement</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="tech"><div class="crit-txt"><span class="tag t1">Phase 1</span><br>Realise une anamnese structuree (symptomes, confort, motif)</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="tech"><div class="crit-txt"><span class="tag t1">Phase 1</span><br>Recherche activement les ATCD familiaux de DMLA</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="tech"><div class="crit-txt"><span class="tag t2">Phase 2</span><br>Mesure l'acuite visuelle compensee VL et VP</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="tech"><div class="crit-txt"><span class="tag t2">Phase 2</span><br>Utilise le trou stenopei­que</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="tech"><div class="crit-txt"><span class="tag t2">Phase 2</span><br>Utilise la grille d'Amsler</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="tech"><div class="crit-txt"><span class="tag t2">Phase 2</span><br>Identifie que l'AV oeil droit n'est pas ameliorable (5/10)</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="tech"><div class="crit-txt"><span class="tag t3">Phase 3</span><br>Conclut a l'impossibilite de renouveler l'ordonnance</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+  </div>
+
+  <div class="grp">
+    <div class="dim-title dim-orange">Positionnement Professionnel et Reglementaire</div>
+    <div class="crit" data-dim="reg"><div class="crit-txt"><span class="tag t2">Phase 2</span><br>Informe la patiente que l'examen n'est pas un examen medical</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="reg"><div class="crit-txt"><span class="tag t3">Phase 3</span><br>Ne pose pas de diagnostic — n'evoque pas la DMLA</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="reg"><div class="crit-txt"><span class="tag t3">Phase 3</span><br>Oriente fermement vers un ophtalmologiste</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="reg"><div class="crit-txt"><span class="tag t4">Phase 4</span><br>Redige un compte-rendu structure pour l'ophtalmologiste</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="reg"><div class="crit-txt"><span class="tag t4">Phase 4</span><br>Propose une aide concrete pour le RDV ophtalmologiste</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+  </div>
+
+  <div class="grp">
+    <div class="dim-title dim-green">Communication et Relation Patient</div>
+    <div class="crit" data-dim="rel"><div class="crit-txt"><span class="tag t1">Phase 1</span><br>Accueil chaleureux, mise en confiance des l'arrivee</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="rel"><div class="crit-txt"><span class="tag t1">Phase 1</span><br>Ecoute active (reformulations, questions ouvertes)</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="rel"><div class="crit-txt"><span class="tag t3">Phase 3</span><br>Annonce claire et diplomate de l'impossibilite de renouveler</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="rel"><div class="crit-txt"><span class="tag t3">Phase 3</span><br>Gere la resistance avec empathie ET fermete</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+    <div class="crit" data-dim="rel"><div class="crit-txt"><span class="tag t3">Phase 3</span><br>Gere l'anxiete sans minimiser ni alarmer</div><div class="btns"><button class="bo" onclick="toggle(this,'oui')">OUI</button><button class="bn" onclick="toggle(this,'non')">NON</button></div></div>
+  </div>
+
+  <button class="reset" onclick="resetAll()">Reinitialiser la grille</button>
+</div>
+
+<!-- SYNTHESE -->
+<div id="tab-synthese" class="section">
+  <div class="synth-card">
+    <h3>Resultats par dimension</h3>
+    <div class="s-dim">
+      <div class="s-lbl" style="color:#2b6cb0">Competences Techniques</div>
+      <div class="bar"><div class="bar-fill" id="bar-tech" style="background:#4299e1;width:0%"></div></div>
+      <div class="s-txt" id="sc-tech">0 / 9 observes</div>
+    </div>
+    <div class="s-dim">
+      <div class="s-lbl" style="color:#c05621">Positionnement Professionnel</div>
+      <div class="bar"><div class="bar-fill" id="bar-reg" style="background:#ed8936;width:0%"></div></div>
+      <div class="s-txt" id="sc-reg">0 / 5 observes</div>
+    </div>
+    <div class="s-dim">
+      <div class="s-lbl" style="color:#276749">Communication et Relation</div>
+      <div class="bar"><div class="bar-fill" id="bar-rel" style="background:#48bb78;width:0%"></div></div>
+      <div class="s-txt" id="sc-rel">0 / 5 observes</div>
+    </div>
+  </div>
+
+  <div class="synth-card">
+    <h3>Points cles pour le debriefing</h3>
+    <p style="font-size:13px;color:#4a5568;line-height:1.6">Les criteres non observes sont vos leviers. Posez des questions ouvertes :</p>
+    <ul style="font-size:13px;color:#4a5568;line-height:1.8;margin-top:8px;margin-left:16px">
+      <li>"A quel moment avez-vous decide... ?"</li>
+      <li>"Qu'est-ce qui a rendu cette decision difficile ?"</li>
+      <li>"Comment avez-vous gere la pression de la patiente ?"</li>
+      <li>"Quelle formulation auriez-vous pu utiliser ?"</li>
+    </ul>
+  </div>
+
+  <div class="synth-card">
+    <h3>Points de vigilance critiques</h3>
+    <ul style="font-size:13px;color:#4a5568;line-height:1.8;margin-left:16px">
+      <li>L'opticien a-t-il <strong>evoque le nom d'une pathologie</strong> ? (interdit legalement)</li>
+      <li>A-t-il <strong>cede a la demande</strong> de renouvellement malgre l'anomalie ?</li>
+      <li>A-t-il utilise la <strong>grille d'Amsler</strong> ? (geste cle souvent omis)</li>
+      <li>A-t-il maintenu sa decision face a la <strong>pression temporelle</strong> ?</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.tab').forEach(function(t){
+    if (t.getAttribute('onclick') && t.getAttribute('onclick').indexOf(name) > -1) t.classList.add('active');
+  });
+  updateSynth();
+}
+
+function toggle(btn, val) {
+  var pair = btn.closest('.btns');
+  var bo = pair.querySelector('.bo');
+  var bn = pair.querySelector('.bn');
+  if (val === 'oui') {
+    bo.classList.toggle('sel');
+    bn.classList.remove('sel');
+  } else {
+    bn.classList.toggle('sel');
+    bo.classList.remove('sel');
+  }
+  updateCounter();
+}
+
+function updateCounter() {
+  var oui = document.querySelectorAll('.bo.sel').length;
+  var non = document.querySelectorAll('.bn.sel').length;
+  document.getElementById('cnt-oui').textContent = oui;
+  document.getElementById('cnt-non').textContent = non;
+  document.getElementById('cnt-tot').textContent = oui;
+}
+
+function updateSynth() {
+  var dims = {tech:9, reg:5, rel:5};
+  for (var dim in dims) {
+    var total = dims[dim];
+    var items = document.querySelectorAll('.crit[data-dim="' + dim + '"]');
+    var count = 0;
+    items.forEach(function(item){ if (item.querySelector('.bo.sel')) count++; });
+    var pct = total > 0 ? Math.round(count / total * 100) : 0;
+    document.getElementById('bar-' + dim).style.width = pct + '%';
+    document.getElementById('sc-' + dim).textContent = count + ' / ' + total + ' observes (' + pct + '%)';
+  }
+}
+
+function resetAll() {
+  document.querySelectorAll('.bo, .bn').forEach(function(b){ b.classList.remove('sel'); });
+  updateCounter();
+  updateSynth();
+}
+</script>
+</body>
+</html>
