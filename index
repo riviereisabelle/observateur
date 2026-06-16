@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grille Observateur</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f0f4f8;font-size:15px;max-width:600px;margin:0 auto}
+.hd{background:#1e3a5f;color:white;padding:16px 12px}
+.hd h1{font-size:15px;font-weight:bold;line-height:1.4}
+.hd p{font-size:11px;margin-top:4px;opacity:.8}
+.tabs{display:flex;background:white;border-bottom:2px solid #ddd}
+.tab{flex:1;padding:10px 2px;text-align:center;font-size:11px;font-weight:bold;color:#888;cursor:pointer;border-bottom:3px solid transparent}
+.tab.on{color:#1e3a5f;border-bottom-color:#1e3a5f;background:#f7faff}
+.pg{display:none;padding:12px}
+.pg.on{display:block}
+.box{background:white;border-radius:8px;padding:12px;margin-bottom:10px;border-left:4px solid #1e3a5f}
+.box h3{font-size:13px;font-weight:bold;color:#1e3a5f;margin-bottom:6px}
+.box p,.box li{font-size:13px;color:#555;line-height:1.5}
+.box li{margin-left:14px;margin-bottom:2px}
+.warn{border-left-color:#e07000}
+.warn h3{color:#e07000}
+.tl{padding-left:22px;position:relative}
+.tl:before{content:"";position:absolute;left:7px;top:0;bottom:0;width:2px;background:#ccc}
+.ti{position:relative;margin-bottom:12px;background:white;border-radius:8px;padding:10px 12px}
+.dot{position:absolute;left:-19px;top:12px;width:12px;height:12px;border-radius:50%;border:2px solid white}
+.ph{font-size:10px;font-weight:bold;text-transform:uppercase;margin-bottom:2px}
+.ti h3{font-size:14px;font-weight:bold;margin-bottom:4px}
+.dur{display:inline-block;background:#eee;color:#555;font-size:11px;padding:2px 7px;border-radius:8px;margin-bottom:6px}
+.ti ul{font-size:12px;color:#555;line-height:1.5}
+.ti ul li{margin-left:12px;margin-bottom:2px}
+.note{font-size:12px;color:#c05000;margin-top:6px}
+.p1 .dot{background:#4299e1}.p1 .ph{color:#2b6cb0}
+.p2 .dot{background:#48bb78}.p2 .ph{color:#276749}
+.p3 .dot{background:#e07000}.p3 .ph{color:#b05000}
+.p4 .dot{background:#9f7aea}.p4 .ph{color:#6b46c1}
+.cnt{background:white;border-radius:8px;padding:12px;margin-bottom:12px;display:flex;justify-content:space-around;text-align:center}
+.cn span{display:block}
+.num{font-size:24px;font-weight:bold}
+.lbl{font-size:11px;color:#888}
+.n1 .num{color:#48bb78}
+.n2 .num{color:#f87171}
+.n3 .num{color:#1e3a5f}
+.gh{font-size:13px;font-weight:bold;padding:8px 12px}
+.gb{background:#dbeafe;color:#1d4ed8;border-left:4px solid #3b82f6;border-radius:8px 8px 0 0}
+.go{background:#fff7ed;color:#9a3412;border-left:4px solid #f97316;border-radius:8px 8px 0 0}
+.gg{background:#f0fdf4;color:#166534;border-left:4px solid #22c55e;border-radius:8px 8px 0 0}
+.grp{margin-bottom:12px;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.cr{background:white;border-bottom:1px solid #eee;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.cr:last-child{border-bottom:none;border-radius:0 0 8px 8px}
+.ct{flex:1;font-size:13px;line-height:1.4;color:#333}
+.tg{display:inline-block;font-size:10px;font-weight:bold;padding:1px 6px;border-radius:5px;margin-bottom:3px}
+.t1{background:#dbeafe;color:#1e40af}
+.t2{background:#dcfce7;color:#166534}
+.t3{background:#fff7ed;color:#9a3412}
+.t4{background:#f3e8ff;color:#6b21a8}
+.bts{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
+.bo,.bn{padding:6px 10px;border:none;border-radius:5px;font-size:12px;font-weight:bold;cursor:pointer}
+.bo{background:#dcfce7;color:#166534}
+.bn{background:#fee2e2;color:#991b1b}
+.bo.on{background:#22c55e;color:white}
+.bn.on{background:#f87171;color:white}
+.rst{display:block;width:100%;padding:12px;background:#e5e7eb;color:#374151;font-size:13px;font-weight:bold;border:none;border-radius:8px;cursor:pointer;margin-top:8px}
+.sc{background:white;border-radius:8px;padding:14px;margin-bottom:12px}
+.sc h3{font-size:14px;font-weight:bold;color:#333;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #eee}
+.sd{margin-bottom:12px}
+.sl{font-size:12px;font-weight:bold;margin-bottom:4px}
+.bar{height:10px;background:#e5e7eb;border-radius:5px;overflow:hidden;margin-bottom:2px}
+.bf{height:100%;border-radius:5px;transition:width .3s}
+.st{font-size:11px;color:#888}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <h1>Grille Observation - Formateur<br>Simulation EPP/DPC Optique</h1>
+  <p>Renouvellement ordonnance - Detection anomalie</p>
+</div>
+
+<div class="tabs">
+  <div class="tab on" onclick="go('a')">Contexte</div>
+  <div class="tab" onclick="go('b')">Timeline</div>
+  <div class="tab" onclick="go('c')">Grille</div>
+  <div class="tab" onclick="go('d')">Synthese</div>
+</div>
+
+<div id="pa" class="pg on">
+  <div class="box">
+    <h3>Situation clinique</h3>
+    <p><b>Patiente :</b> Mme Claire BERNARD, 58 ans, enseignante</p>
+    <p style="margin-top:5px"><b>Motif :</b> Renouvellement lunettes avant voyage (dans 10 jours)</p>
+    <p style="margin-top:5px"><b>Ordonnance :</b> 2 ans et 8 mois - valide (moins de 3 ans pour plus 42 ans)</p>
+  </div>
+  <div class="box">
+    <h3>Ce que l'opticien doit decouvrir</h3>
+    <ul>
+      <li>Acuite visuelle oeil droit : <b>5/10 non ameliorable</b></li>
+      <li>Scotome central OD (grille d'Amsler)</li>
+      <li>ATCD familiaux : <b>mere atteinte de DMLA</b></li>
+    </ul>
+  </div>
+  <div class="box">
+    <h3>Ce que l'opticien DOIT faire</h3>
+    <ul>
+      <li>Refuser le renouvellement</li>
+      <li>Orienter vers un ophtalmologiste</li>
+      <li>Rediger un compte-rendu professionnel</li>
+      <li><b>Ne pas poser de diagnostic medical</b></li>
+    </ul>
+  </div>
+  <div class="box warn">
+    <h3>Complexite du scenario</h3>
+    <p>Patiente anxieuse, nie sa baisse de vision ("c'est la fatigue"), sous pression temporelle, resiste a l'orientation et tente d'obtenir un diagnostic de l'opticien.</p>
+  </div>
+  <div class="box">
+    <h3>Votre role</h3>
+    <ul>
+      <li>Rester <b>silencieux</b> pendant le scenario</li>
+      <li>Cocher vos observations dans l'onglet <b>Grille</b></li>
+      <li>Alimenter le <b>debriefing collectif</b></li>
+    </ul>
+  </div>
+</div>
+
+<div id="pb" class="pg">
+  <div class="box warn"><p><b>Duree : 15 minutes</b> par opticien - 4 passages successifs</p></div>
+  <div class="tl">
+    <div class="ti p1">
+      <div class="dot"></div>
+      <div class="ph">Phase 1</div>
+      <h3>Accueil et Anamnese</h3>
+      <div class="dur">4 min - entree patiente</div>
+      <ul>
+        <li>Accueille, recupere ordonnance</li>
+        <li>Questionne confort visuel actuel</li>
+        <li>Recherche ATCD familiaux oculaires</li>
+        <li>Propose un examen de vue</li>
+      </ul>
+      <p class="note"><b>Patiente :</b> Minimise symptomes, evoque voyage, souriante mais anxieuse</p>
+    </div>
+    <div class="ti p2">
+      <div class="dot"></div>
+      <div class="ph">Phase 2</div>
+      <h3>Examens preliminaires</h3>
+      <div class="dur">5 min - salle examen</div>
+      <ul>
+        <li>Mesure AV VL et VP (mono + bino)</li>
+        <li>Trou stenopeique OD : AV non ameliorable</li>
+        <li>Grille d'Amsler OD : scotome central</li>
+      </ul>
+      <p class="note"><b>Patiente :</b> Coopere. Confirme tache centrale. "Je peux avoir de nouvelles lunettes ?"</p>
+    </div>
+    <div class="ti p3">
+      <div class="dot"></div>
+      <div class="ph">Phase 3</div>
+      <h3>Identification et Annonce</h3>
+      <div class="dur">3 min - moment critique</div>
+      <ul>
+        <li>Annonce impossibilite de renouveler</li>
+        <li>Explique necessite d'un avis medical</li>
+        <li>Ne pose PAS de diagnostic (pas de DMLA)</li>
+      </ul>
+      <p class="note"><b>Patiente :</b> Resistance, anxiete, cherche un diagnostic</p>
+    </div>
+    <div class="ti p4">
+      <div class="dot"></div>
+      <div class="ph">Phase 4</div>
+      <h3>Orientation et Tracabilite</h3>
+      <div class="dur">3 min - cloture</div>
+      <ul>
+        <li>Maintient orientation ophtalmo fermement</li>
+        <li>Redige le compte-rendu</li>
+        <li>Propose aide pour RDV</li>
+        <li>Rassure sans minimiser ni alarmer</li>
+      </ul>
+      <p class="note"><b>Patiente :</b> Accepte progressivement, remercie</p>
+    </div>
+  </div>
+</div>
+
+<div id="pc" class="pg">
+  <div class="cnt">
+    <div class="cn n1"><span class="num" id="c1">0</span><span class="lbl">Observes</span></div>
+    <div class="cn n2"><span class="num" id="c2">0</span><span class="lbl">Non obs.</span></div>
+    <div class="cn n3"><span class="num" id="c3">0</span><span class="lbl">/ 19</span></div>
+  </div>
+
+  <div class="grp">
+    <div class="gh gb">Competences Techniques</div>
+    <div class="cr" data-d="tech"><div class="ct"><span class="tg t1">Phase 1</span><br>Verifie validite ordonnance (date + age)</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="tech"><div class="ct"><span class="tg t1">Phase 1</span><br>Propose examen de vue avant renouvellement</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="tech"><div class="ct"><span class="tg t1">Phase 1</span><br>Realise anamnese structuree (symptomes, confort, motif)</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="tech"><div class="ct"><span class="tg t1">Phase 1</span><br>Recherche ATCD familiaux de DMLA</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="tech"><div class="ct"><span class="tg t2">Phase 2</span><br>Mesure AV compensee VL et VP</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="tech"><div class="ct"><span class="tg t2">Phase 2</span><br>Utilise le trou stenopeique</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="tech"><div class="ct"><span class="tg t2">Phase 2</span><br>Utilise la grille d'Amsler</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="tech"><div class="ct"><span class="tg t2">Phase 2</span><br>Identifie AV oeil droit non ameliorable (5/10)</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="tech"><div class="ct"><span class="tg t3">Phase 3</span><br>Conclut impossibilite de renouveler</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+  </div>
+
+  <div class="grp">
+    <div class="gh go">Positionnement Professionnel</div>
+    <div class="cr" data-d="reg"><div class="ct"><span class="tg t2">Phase 2</span><br>Informe : examen non medical</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="reg"><div class="ct"><span class="tg t3">Phase 3</span><br>Ne pose pas de diagnostic - n'evoque pas la DMLA</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="reg"><div class="ct"><span class="tg t3">Phase 3</span><br>Oriente fermement vers ophtalmologiste</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="reg"><div class="ct"><span class="tg t4">Phase 4</span><br>Redige compte-rendu structure</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="reg"><div class="ct"><span class="tg t4">Phase 4</span><br>Propose aide concrete pour RDV ophtalmo</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+  </div>
+
+  <div class="grp">
+    <div class="gh gg">Communication et Relation Patient</div>
+    <div class="cr" data-d="rel"><div class="ct"><span class="tg t1">Phase 1</span><br>Accueil chaleureux, mise en confiance</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="rel"><div class="ct"><span class="tg t1">Phase 1</span><br>Ecoute active (reformulations, questions ouvertes)</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="rel"><div class="ct"><span class="tg t3">Phase 3</span><br>Annonce claire et diplomate</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="rel"><div class="ct"><span class="tg t3">Phase 3</span><br>Gere resistance avec empathie ET fermete</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+    <div class="cr" data-d="rel"><div class="ct"><span class="tg t3">Phase 3</span><br>Gere anxiete sans minimiser ni alarmer</div><div class="bts"><button class="bo" onclick="tg(this,'o')">OUI</button><button class="bn" onclick="tg(this,'n')">NON</button></div></div>
+  </div>
+
+  <button class="rst" onclick="raz()">Reinitialiser la grille</button>
+</div>
+
+<div id="pd" class="pg">
+  <div class="sc">
+    <h3>Resultats par dimension</h3>
+    <div class="sd">
+      <div class="sl" style="color:#1d4ed8">Competences Techniques</div>
+      <div class="bar"><div class="bf" id="bt" style="background:#3b82f6;width:0%"></div></div>
+      <div class="st" id="st1">0 / 9 observes</div>
+    </div>
+    <div class="sd">
+      <div class="sl" style="color:#9a3412">Positionnement Professionnel</div>
+      <div class="bar"><div class="bf" id="br" style="background:#f97316;width:0%"></div></div>
+      <div class="st" id="st2">0 / 5 observes</div>
+    </div>
+    <div class="sd">
+      <div class="sl" style="color:#166534">Communication et Relation</div>
+      <div class="bar"><div class="bf" id="bl" style="background:#22c55e;width:0%"></div></div>
+      <div class="st" id="st3">0 / 5 observes</div>
+    </div>
+  </div>
+  <div class="sc">
+    <h3>Questions cles pour le debriefing</h3>
+    <ul style="font-size:13px;color:#555;line-height:1.8;margin-left:16px">
+      <li>"A quel moment avez-vous decide ?"</li>
+      <li>"Qu'est-ce qui a rendu la decision difficile ?"</li>
+      <li>"Comment avez-vous gere la pression de la patiente ?"</li>
+      <li>"Quelle formulation auriez-vous pu utiliser ?"</li>
+    </ul>
+  </div>
+  <div class="sc">
+    <h3>Vigilances critiques</h3>
+    <ul style="font-size:13px;color:#555;line-height:1.8;margin-left:16px">
+      <li>L'opticien a-t-il evoque le nom d'une pathologie ? (interdit)</li>
+      <li>A-t-il cede a la demande de renouvellement ?</li>
+      <li>A-t-il utilise la grille d'Amsler ?</li>
+      <li>A-t-il maintenu sa decision face a la pression ?</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+function go(x) {
+  var ids = ['a','b','c','d'];
+  for (var i=0;i<ids.length;i++) {
+    document.getElementById('p'+ids[i]).className = 'pg';
+  }
+  document.querySelectorAll('.tab').forEach(function(t){t.className='tab';});
+  document.getElementById('p'+x).className = 'pg on';
+  document.querySelectorAll('.tab')[['a','b','c','d'].indexOf(x)].className = 'tab on';
+  upd();
+}
+function tg(btn, v) {
+  var p = btn.parentNode;
+  var bo = p.querySelector('.bo');
+  var bn = p.querySelector('.bn');
+  if (v==='o') { bo.className = bo.className==='bo on' ? 'bo' : 'bo on'; bn.className='bn'; }
+  else { bn.className = bn.className==='bn on' ? 'bn' : 'bn on'; bo.className='bo'; }
+  cnt();
+}
+function cnt() {
+  var o=document.querySelectorAll('.bo.on').length;
+  var n=document.querySelectorAll('.bn.on').length;
+  document.getElementById('c1').textContent=o;
+  document.getElementById('c2').textContent=n;
+  document.getElementById('c3').textContent=o;
+}
+function upd() {
+  var ds=[['tech',9,'bt','st1'],['reg',5,'br','st2'],['rel',5,'bl','st3']];
+  for (var i=0;i<ds.length;i++) {
+    var d=ds[i]; var tot=d[1];
+    var items=document.querySelectorAll('.cr[data-d="'+d[0]+'"]');
+    var c=0;
+    for (var j=0;j<items.length;j++){if(items[j].querySelector('.bo.on'))c++;}
+    var p=Math.round(c/tot*100);
+    document.getElementById(d[2]).style.width=p+'%';
+    document.getElementById(d[3]).textContent=c+' / '+tot+' observes ('+p+'%)';
+  }
+}
+function raz() {
+  document.querySelectorAll('.bo').forEach(function(b){b.className='bo';});
+  document.querySelectorAll('.bn').forEach(function(b){b.className='bn';});
+  cnt(); upd();
+}
+</script>
+</body>
+</html>
